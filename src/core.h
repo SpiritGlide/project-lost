@@ -5,20 +5,13 @@
     enum BOOL {FALSE, TRUE};
 #endif
 
-#ifdef OS_WINDOWS
+
 #include <windows.h>
-#include "../libs/pdcurses/curses.h"
-#endif
-
-#ifdef OS_LINUX
-#include <limits.h> // for PATH_MAX
-#include <curses.h>
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
+#include "../libs/pdcurses/curses.h"
 #include "../libs/heightmap/height_map.h"
 #include "walk_mode.h"
 #include "menu.h"
@@ -41,10 +34,8 @@ enum ERRORS {
     EWINCRT,        // Error in creating new curses window
     ELOGFP,         // Error in log file working
     ESMALLTERM,     // Error caused by small terminal size
-    EUNKOS,         // If OS was not defined during term size retrieval
-    ENOTSIZE,       // If OS was defined, but wasn't able to get term sized
     EBTNNMBR,       // Error caused by invalid number of button been created
-    EGROUND,        // Couldn't find place to spawn player
+    EGROUND,
     EUNKERR         // Unknown error
 };
 
@@ -53,11 +44,11 @@ enum ERROR_VALUES {
     ECURBTN = -1,   // Error in menu working
 };
 
-int init();                      // Return the error code specified in core.h
+extern int init();                      // Return the error code specified in core.h
 void deinit();                          // Return the error code specified in core.h
 
-int loginit();                   // Return the error code specified in core.h
-int colorinit();                 // Return the error code specified in core.h
+extern int loginit();                   // Return the error code specified in core.h
+extern int colorinit();                 // Return the error code specified in core.h
 
 int get_norm_height(int x, int y,
                     int norm_diameter,
