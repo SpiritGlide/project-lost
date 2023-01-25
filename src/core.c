@@ -13,6 +13,8 @@ const char *ERR_MSG[] = {
         "Error trying to create a new window",
         "Error creating/editing .log file",
         "The terminal is too small to display the game interface",
+        "I can't tell what OS you use to get terminal size. How did you get here?",
+        "I know what OS you are using, but it failed to tell me your terminal sizes"
         "Error in the sequence number of the button being created",
         "No ground in current game area detected",
         "Unknown error"
@@ -24,17 +26,54 @@ const char *ERR_VAL_MSG[] = {
 };
 
 
-extern int init() {
+int init() {
     // Working with LOGs
     loginit();
 
     // Checking terminal size
+enum T_SIZE
+{
+    T_SIZE_UNKNOWN_OS = -2, // will show that OS was not defined
+    T_SIZE_OS_ERR = -1 // shows that OS was defined, but failed to get term size
+};
+
+    int win_term_columns = T_SIZE_UNKNOWN_OS, win_term_rows = T_SIZE_UNKNOWN_OS;
+#ifdef OS_WINDOWS
+    // Defined OS Windows
+    win_term_columns = T_SIZE_OS_ERR, win_term_rows = T_SIZE_OS_ERR;
+
     CONSOLE_SCREEN_BUFFER_INFO console_scr_buf_info;
-    int win_term_columns, win_term_rows;
 
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_scr_buf_info);
     win_term_columns = console_scr_buf_info.srWindow.Right - console_scr_buf_info.srWindow.Left + 1;
     win_term_rows = console_scr_buf_info.srWindow.Bottom - console_scr_buf_info.srWindow.Top + 1;
+#endif
+
+#ifdef OS_LINUX
+    // Defined OS GNU/Linux
+    win_term_columns = T_SIZE_OS_ERR, win_term_rows = T_SIZE_OS_ERR;
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <errno.h>
+
+    struct winsize win;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+    win_term_rows = win.ws_row;
+    win_term_columns = win.ws_col;
+#endif
+
+    if (win_term_columns == T_SIZE_UNKNOWN_OS
+            || win_term_rows == T_SIZE_UNKNOWN_OS) {
+        log_fatal("OS Was not defined. I'm surprised you managed to come this far...");
+        return EUNKOS;
+    } else if (win_term_columns == T_SIZE_OS_ERR
+            || win_term_rows == T_SIZE_OS_ERR) {
+        log_fatal("Could not get terminal size");
+        return ENOTSIZE;
+    }
 
     if (win_term_columns < MIN_TERM_X || win_term_rows < MIN_TERM_Y
             || win_term_columns * win_term_rows < MIN_TERM_AREA) {
@@ -80,7 +119,7 @@ void deinit() {
 }
 
 
-extern int loginit() {
+int loginit() {
     FILE *fp = fopen(LOG_FILE_NAME, "w+");
     if (fp == NULL) {
         log_error("Log file creating/opening error.");
@@ -98,7 +137,7 @@ extern int loginit() {
 }
 
 
-extern int colorinit() {
+int colorinit() {
     if (has_colors() == FALSE) {
         log_warn("Terminal colours unavailible.");
         return ECOLOR;
