@@ -1,52 +1,21 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 project(project_lost C)
 
 set(CMAKE_C_STANDARD 23)
 
-#
-# PLATFORM-INDEPENDENT SECTION
-#
-
-# general source
-SET(SRC_PATH ${CMAKE_SOURCE_DIR}/src)
-FILE(GLOB_RECURSE SRC ${SRC_PATH}/*.c)
-
-# log library
-SET(LOG_PATH ${CMAKE_SOURCE_DIR}/libs/log/src)
-FILE(GLOB_RECURSE LOG_SRC ${LOG_PATH}/*.c)
-add_library(log STATIC ${LOG_SRC})
-include_directories(${LOG_PATH})
-
-# heightmap library
-SET(HEIGHTMAP_PATH ${CMAKE_SOURCE_DIR}/libs/heightmap)
-FILE(GLOB_RECURSE HEIGHTMAP_SRC ${HEIGHTMAP_PATH}/*.c)
-add_library(heightmap STATIC ${HEIGHTMAP_SRC})
-include_directories(${HEIGHTMAP_PATH})
-
-
-#
-# PLATFORM-DEPENDENT SECTION
-#
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    SET(PDCURSES_PATH ${CMAKE_SOURCE_DIR}/libs/pdcurses)
-    FILE(GLOB_RECURSE PDCURSES_SRC ${PDCURSES_PATH}/wincon/*.c ${PDCURSES_PATH}/pdcurses/*.c)
-    add_library(pdcurses STATIC ${PDCURSES_SRC})
-    include_directories(${PDCURSES_PATH})
-
-    add_executable(project_lost main.c ${SRC})
-
-    target_link_libraries(project_lost log pdcurses heightmap)
-
-    add_compile_definitions(OS_WINDOWS)
-
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    add_executable(project_lost main.c ${SRC})
-
-    target_link_libraries(project_lost log heightmap curses)
-
-    add_compile_definitions(OS_LINUX)
+    SET(libs_pdcurses ${CMAKE_CURRENT_SOURCE_DIR}/libs/pdcurses/wincon)
 endif()
 
+FILE(GLOB_RECURSE PDCURSES_SRC ${libs_pdcurses}/*.c ${CMAKE_CURRENT_SOURCE_DIR}/libs/pdcurses/pdcurses/*.c)
+FILE(GLOB_RECURSE LOG_SRC ${CMAKE_CURRENT_SOURCE_DIR}/libs/logging/*.c)
 
+add_executable(project_lost main.c ${PDCURSES_SRC} src/core.c src/core.h src/menu.c src/menu.h src/walk_mode.c src/walk_mode.h src/game.c src/game.h libs/heightmap/height_map.c)
+#add_compile_options(-DDEBUG)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/pdcurses)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/logging/src)
+add_library(pdcurses STATIC ${PDCURSES_SRC})
+add_library(log STATIC ${LOG_SRC})
+
+target_link_libraries(project_lost log pdcurses)
