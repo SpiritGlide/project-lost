@@ -43,9 +43,13 @@ int walk_window() {
     }
 
     PLAYER boy = {};
-    // TODO: Check for ground
-    log_info("Spawn player status is %d", spawn_player(walk_window, &boy, BORDER, BORDER));
+    // TODO: Check for ground and inplement recursive search algorithm with ceiling
+    int spawn_result = spawn_player(walk_window, &boy, BORDER, BORDER);
+    log_info("Spawn player status is %d", spawn_result);
 
+    curs_set(FALSE); // hide cursor
+
+    keypad(walk_window, TRUE);
     while(1) {
         int detected_symbol = wgetch(walk_window);
         char direction = 's';
@@ -85,6 +89,8 @@ int walk_window() {
     error:
     end:
 
+    curs_set(TRUE); // show cursor again
+
     wclear(walk_window);
     delwin(walk_window);
 
@@ -115,6 +121,8 @@ int terrain_display(WINDOW *walking_area, int window_size_y, int window_size_x, 
     }
 
     free(map);
+
+    return EOK;
 }
 
 
@@ -231,6 +239,8 @@ int remap(WINDOW *walk_area, PLAYER *boy, MAPSQUARE *cur_square,
             break;
         }
     }
+
+    return EOK;
 }
 
 
@@ -289,8 +299,7 @@ int move_player(WINDOW *walk_area, PLAYER *boy, int offset_y, int offset_x, char
         }
 
         case 'd': {
-            int height, width;
-            getmaxyx(walk_area, height, width);
+            int height = getmaxy(walk_area);
 
             if ((boy->y + 1) >= height - offset_y) {
                 return 'd';
@@ -307,9 +316,6 @@ int move_player(WINDOW *walk_area, PLAYER *boy, int offset_y, int offset_x, char
         }
 
         case 'l': {
-            int height, width;
-            getmaxyx(walk_area, height, width);
-
             if ((boy->x - 1) < offset_x) {
                 return 'l';
             }
@@ -325,8 +331,7 @@ int move_player(WINDOW *walk_area, PLAYER *boy, int offset_y, int offset_x, char
         }
 
         case 'r': {
-            int height, width;
-            getmaxyx(walk_area, height, width);
+            int width = getmaxx(walk_area);
 
             if ((boy->x + 1) >= width - offset_x) {
                 return 'r';
