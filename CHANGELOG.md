@@ -1,4 +1,4 @@
-# v0.1.37
+# v0.1.1
 
 - ## game compiling and working on GNU/Linux and Windows
 - ## fixed bug with stack overflow in prty_ttl due to PATH_MAX*PATH_MAX char matrix
