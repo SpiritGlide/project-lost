@@ -1,6 +1,5 @@
-# project-lost
+# Project "LOST"
+> An unfinished game in C, telling about a boy with whom a terrible story happened.
 
-## A game about the guy, who got in a wrong place at a wrong time
-
-### Author: Alex K
-### Backed by: Mikhail K
+## Authors
+Imagined Adam Heine and supported with love Mikhail K.
